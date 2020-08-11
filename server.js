@@ -1,6 +1,7 @@
 const express = require('express');
 const mongodb = require('mongodb');
-const uri = 'mongodb+srv://<username>:<password>@<domain>';
+const config = require('config');
+const uri = config.dbhost;
 const mongoOptions = { useUnifiedTopology: true };
 const client = new mongodb.MongoClient(uri, mongoOptions);
 
@@ -8,7 +9,7 @@ const app = express();
 app.use(express.json());
 
 client.connect(function () {
-  const db = client.db('cinema');
+  const db = client.db('mongo-week3');
 
   app.get('/films', function (request, response) {
     const collection = db.collection('films');
@@ -63,7 +64,7 @@ client.connect(function () {
     collection.findOneAndUpdate(searchObject, data, options, function (error, result) {
       if (error) {
         response.status(500).send(error);
-      } else if (result.ok) {
+      } else if (result.value) {
         response.status(200).send(result.value);
       } else {
         response.sendStatus(404);
@@ -79,7 +80,7 @@ client.connect(function () {
     collection.deleteOne(searchObject, function (error, result) {
       if (error) {
         response.status(500).send(error);
-      } else if (result.ok) {
+      } else if (result.deletedCount == 1) {
         response.sendStatus(204);
       } else {
         response.sendStatus(404);
@@ -89,3 +90,5 @@ client.connect(function () {
 
   app.listen(3000);
 });
+
+module.exports = app; // for testing
